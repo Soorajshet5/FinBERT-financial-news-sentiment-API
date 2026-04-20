@@ -1,4 +1,16 @@
-﻿# FinBERT Financial News Sentiment API
+﻿---
+title: FinBERT Financial News Sentiment API
+emoji: 📈
+colorFrom: green
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
+
+
+
+# FinBERT Financial News Sentiment API
 
 End-to-end NLP pipeline for Indian market sentiment analysis using fine-tuned FinBERT.
 
