@@ -1,4 +1,4 @@
-import httpx
+﻿import httpx
 import asyncio
 from typing import List, Dict, Optional
 from datetime import datetime
@@ -75,7 +75,7 @@ async def fetch_newsapi(query: str = "NSE India stocks", limit: int = 20) -> Lis
 
 
 async def fetch_news(ticker: str = "RELIANCE", limit: int = 20) -> List[Dict]:
-    """Unified news fetcher — tries Alpha Vantage first, falls back to NewsAPI."""
+    """Unified news fetcher â€” tries Alpha Vantage first, falls back to NewsAPI."""
     results = await fetch_alpha_vantage_news(ticker, limit)
     if not results:
         results = await fetch_newsapi(f"{ticker} India stock market", limit)

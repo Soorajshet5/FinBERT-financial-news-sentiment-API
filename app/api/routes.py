@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Request, HTTPException
-from app.models.schemas import (
+﻿from fastapi import APIRouter, Request, HTTPException
+from models.schemas import (
     AnalyzeRequest, BatchAnalyzeRequest, SentimentResult,
     NewsAnalysisRequest, NewsAnalysisResponse, SearchRequest,
 )
-from app.pipeline.ingestor import fetch_news
-from app.pipeline.vectorstore import NewsVectorStore
+from pipeline.ingestor import fetch_news
+from pipeline.vectorstore import NewsVectorStore
 from collections import Counter
 import logging
 
