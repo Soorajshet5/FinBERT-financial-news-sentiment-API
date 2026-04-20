@@ -1,5 +1,4 @@
-@'
-fastapi
+﻿fastapi
 uvicorn[standard]
 transformers
 torch
@@ -11,4 +10,3 @@ python-dotenv
 accelerate
 datasets
 scikit-learn
-'@ | Set-Content requirements.txt
