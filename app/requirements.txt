@@ -1,8 +1,6 @@
-@'
-fastapi
+﻿fastapi
 uvicorn[standard]
 transformers
-torch
 httpx
 pydantic
 chromadb
@@ -11,4 +9,3 @@ python-dotenv
 accelerate
 datasets
 scikit-learn
-'@ | Set-Content requirements.txt
