@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 LABELS = ["bearish", "neutral", "bullish"]
-MODEL_NAME = "./finbert-finetuned"
+MODEL_NAME = "soorajshet5/finbert-nse-sentiment"
 
 
 class SentimentModel:
