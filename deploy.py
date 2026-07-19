@@ -43,24 +43,25 @@ endpoint_name = "finbert-nse-sentiment-serverless"
 
 sm_client = sagemaker.Session().sagemaker_client
 
+# Step 1: delete the endpoint itself, if it exists
 try:
     sm_client.describe_endpoint(EndpointName=endpoint_name)
-    exists = True
-except botocore.exceptions.ClientError:
-    exists = False
-
-if exists:
     print(f"Endpoint {endpoint_name} exists — deleting before redeploy...")
     sm_client.delete_endpoint(EndpointName=endpoint_name)
     waiter = sm_client.get_waiter("endpoint_deleted")
     waiter.wait(EndpointName=endpoint_name)
     print("Old endpoint deleted.")
+except botocore.exceptions.ClientError:
+    print(f"No existing endpoint named {endpoint_name}.")
 
-    try:
-        sm_client.delete_endpoint_config(EndpointConfigName=endpoint_name)
-        print("Old endpoint config deleted.")
-    except botocore.exceptions.ClientError as e:
-        print(f"No endpoint config to delete (or already gone): {e}")
+# Step 2: always attempt to delete any leftover endpoint config,
+# regardless of whether the endpoint itself existed — configs can be
+# orphaned by earlier partial/failed runs.
+try:
+    sm_client.delete_endpoint_config(EndpointConfigName=endpoint_name)
+    print("Old endpoint config deleted.")
+except botocore.exceptions.ClientError as e:
+    print(f"No endpoint config to delete (or already gone): {e}")
 
 print(f"Deploying endpoint {endpoint_name}...")
 predictor = huggingface_model.deploy(
