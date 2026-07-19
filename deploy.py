@@ -3,6 +3,7 @@ import sys
 import botocore
 import sagemaker
 from importlib import util
+
 try:
     from sagemaker.huggingface.model import HuggingFaceModel
     from sagemaker.serverless import ServerlessInferenceConfig
@@ -46,22 +47,24 @@ sm_client = sagemaker.Session().sagemaker_client
 try:
     sm_client.describe_endpoint(EndpointName=endpoint_name)
     exists = True
-except botocore.exceptions.ClientError as e:
-    # If the endpoint does not exist, a ClientError will be raised
+except botocore.exceptions.ClientError:
     exists = False
 
 if exists:
-    print(f"Endpoint {endpoint_name} exists — updating...")
-    predictor = huggingface_model.deploy(
-        serverless_inference_config=serverless_config,
-        endpoint_name=endpoint_name,
-        update_endpoint=True,
-    )
-else:
-    print(f"Creating new endpoint {endpoint_name}...")
-    predictor = huggingface_model.deploy(
-        serverless_inference_config=serverless_config,
-        endpoint_name=endpoint_name,
-    )
+    # v2 SDK's update_endpoint path assumes a real-time endpoint with an
+    # instance_type string, which serverless configs don't have (instance_type
+    # is None). That crashes with "Failed to parse instance type 'None'".
+    # Safe fix for serverless: delete the old endpoint, then deploy fresh.
+    print(f"Endpoint {endpoint_name} exists — deleting before redeploy...")
+    sm_client.delete_endpoint(EndpointName=endpoint_name)
+    waiter = sm_client.get_waiter("endpoint_deleted")
+    waiter.wait(EndpointName=endpoint_name)
+    print("Old endpoint deleted.")
+
+print(f"Deploying endpoint {endpoint_name}...")
+predictor = huggingface_model.deploy(
+    serverless_inference_config=serverless_config,
+    endpoint_name=endpoint_name,
+)
 
 print("Deployed:", predictor.endpoint_name)
