@@ -16,7 +16,6 @@ except ImportError as e:
     print("Install a v2-compatible SageMaker SDK instead: pip install 'sagemaker>=2.185.0,<3'")
     sys.exit(1)
 
-# Ensure role is provided
 role = os.environ.get("SAGEMAKER_ROLE_ARN")
 if not role:
     print("Environment variable SAGEMAKER_ROLE_ARN is not set. Set it before running deploy.py")
@@ -51,15 +50,17 @@ except botocore.exceptions.ClientError:
     exists = False
 
 if exists:
-    # v2 SDK's update_endpoint path assumes a real-time endpoint with an
-    # instance_type string, which serverless configs don't have (instance_type
-    # is None). That crashes with "Failed to parse instance type 'None'".
-    # Safe fix for serverless: delete the old endpoint, then deploy fresh.
     print(f"Endpoint {endpoint_name} exists — deleting before redeploy...")
     sm_client.delete_endpoint(EndpointName=endpoint_name)
     waiter = sm_client.get_waiter("endpoint_deleted")
     waiter.wait(EndpointName=endpoint_name)
     print("Old endpoint deleted.")
+
+    try:
+        sm_client.delete_endpoint_config(EndpointConfigName=endpoint_name)
+        print("Old endpoint config deleted.")
+    except botocore.exceptions.ClientError as e:
+        print(f"No endpoint config to delete (or already gone): {e}")
 
 print(f"Deploying endpoint {endpoint_name}...")
 predictor = huggingface_model.deploy(
