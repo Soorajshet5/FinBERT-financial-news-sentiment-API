@@ -40,15 +40,23 @@ jobs:
       - name: Sanity-check label mapping on live endpoint
         run: |
           check() {
-            RESULT=$(aws sagemaker-runtime invoke-endpoint \
-              --endpoint-name finbert-nse-sentiment-serverless \
-              --content-type application/json \
-              --body "$(echo "{\"inputs\": \"$1\"}" | base64)" \
-              --cli-binary-format raw-in-base64-out \
-              /dev/stdout --no-cli-pager 2>/dev/null | tail -1)
-            echo "Input: $1 -> $RESULT"
-            echo "$RESULT" | grep -q "\"label\":\"$2\"" || { echo "FAILED: expected $2"; exit 1; }
+            for attempt in 1 2 3 4 5; do
+              RESULT=$(aws sagemaker-runtime invoke-endpoint \
+                --endpoint-name finbert-nse-sentiment-serverless \
+                --content-type application/json \
+                --body "$(echo "{\"inputs\": \"$1\"}" | base64)" \
+                --cli-binary-format raw-in-base64-out \
+                /dev/stdout --no-cli-pager 2>/dev/null | tail -1)
+              if echo "$RESULT" | grep -q "\"label\":\"$2\""; then
+                echo "Input: $1 -> $RESULT (attempt $attempt)"
+                return 0
+              fi
+              echo "Attempt $attempt: not ready yet or mismatch, retrying in 15s..."
+              sleep 15
+            done
+            echo "FAILED after 5 attempts: expected $2, got $RESULT"
+            exit 1
           }
           check "Company profits surged and stock price hit an all-time high" "positive"
           check "Company reports massive losses and files for bankruptcy" "negative"
-          check "The company will hold its annual shareholder meeting next Tuesday" "neutral"
+          check "The company will hold its annual shareholder meeting next Tuesday" "neutral""
