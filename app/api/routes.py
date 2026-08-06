@@ -1,10 +1,10 @@
 ﻿from fastapi import APIRouter, Request, HTTPException
-from models.schemas import (
+from app.models.schemas import (
     AnalyzeRequest, BatchAnalyzeRequest, SentimentResult,
     NewsAnalysisRequest, NewsAnalysisResponse, SearchRequest,
 )
-from pipeline.ingestor import fetch_news
-from pipeline.vectorstore import NewsVectorStore
+from app.pipeline.ingestor import fetch_news
+from app.pipeline.vectorstore import NewsVectorStore
 from collections import Counter
 import logging
 
@@ -18,6 +18,7 @@ async def analyze_text(req: AnalyzeRequest, request: Request):
     """Analyze sentiment of a single text."""
     model = request.app.state.model
     result = model.predict_one(req.text)
+    result["ticker"] = req.ticker
     return result
 
 

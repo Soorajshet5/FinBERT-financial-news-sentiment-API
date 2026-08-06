@@ -1,8 +1,8 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from core.model import SentimentModel
-from api.routes import router
+from app.core.model import SentimentModel
+from app.api.routes import router
 import logging
 
 logging.basicConfig(level=logging.INFO)
