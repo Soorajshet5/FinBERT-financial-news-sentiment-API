@@ -9,3 +9,5 @@ python-dotenv
 accelerate
 datasets
 scikit-learn
+pytest
+pytest-asyncio
